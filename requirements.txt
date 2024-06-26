@@ -1,0 +1,13 @@
+streamlit
+python-dotenv
+transformers
+soundfile
+moviepy
+pydub
+scipy
+librosa
+torch
+datasets
+IPython
+rembg
+Pillow
