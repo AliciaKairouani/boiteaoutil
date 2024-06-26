@@ -2,6 +2,11 @@ from transformers import SpeechT5Processor, SpeechT5ForTextToSpeech, SpeechT5Hif
 from datasets import load_dataset
 import torch
 from IPython.display import Audio
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+api_key = os.getenv("HUGGINGFACE_API_KEY")
 
 processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_tts")
 
@@ -18,11 +23,6 @@ def synthesise(text):
     )
     return speech.cpu()
 
-audio = synthesise(
-    "Un test en francais pour savoir si ça marche "
-)
-
-Audio(audio, rate=16000)
 
 def process_input(user_input):
     # Placez ici votre code pour traiter l'entrée utilisateur
