@@ -1,0 +1,41 @@
+from transformers import SpeechT5Processor, SpeechT5ForTextToSpeech, SpeechT5HifiGan
+from datasets import load_dataset
+import torch
+from IPython.display import Audio
+
+processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_tts")
+
+model = SpeechT5ForTextToSpeech.from_pretrained("microsoft/speecht5_tts")
+vocoder = SpeechT5HifiGan.from_pretrained("microsoft/speecht5_hifigan")
+embeddings_dataset = load_dataset("pykeio/librivox-tracks", split="validation")
+speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0)
+
+
+def synthesise(text):
+    inputs = processor(text=text, return_tensors="pt")
+    speech = model.generate_speech(
+        inputs["input_ids"], speaker_embeddings, vocoder=vocoder
+    )
+    return speech.cpu()
+
+audio = synthesise(
+    "Un test en francais pour savoir si ça marche "
+)
+
+Audio(audio, rate=16000)
+
+def process_input(user_input):
+    # Placez ici votre code pour traiter l'entrée utilisateur
+    return f"Vous avez entré : {user_input}"
+
+# Titre de l'application
+st.title("Traduction Français à Anglais")
+
+# Champ de saisie de texte
+user_input = st.text_input("Entrez quelque chose:")
+
+# Bouton pour valider et lancer le processus
+if st.button("Valider"):
+    audio = synthesise(user_input)
+    Audio(audio, rate=16000)
+    st.audio(audio)
