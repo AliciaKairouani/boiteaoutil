@@ -9,7 +9,7 @@ st.title("Suppression de l'arrière-plan d'une image")
 # Champ de téléchargement de fichier
 uploaded_file = st.file_uploader("Chargez une image (PNG ou JPG)", type=["png", "jpg", "jpeg"])
 
-if uploaded_file is not None:
+"""if uploaded_file is not None:
     # Sauvegarder le fichier téléchargé temporairement
     file_path = os.path.join("temp", uploaded_file.name)
     with open(file_path, "wb") as f:
@@ -36,4 +36,4 @@ if uploaded_file is not None:
 
     # Supprimer le fichier temporaire après utilisation
     if os.path.exists(file_path):
-        os.remove(file_path)
+        os.remove(file_path)"""
