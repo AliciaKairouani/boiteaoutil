@@ -1,6 +1,7 @@
 streamlit
 python-dotenv
 transformers
+accelerate
 soundfile
 moviepy
 pydub
