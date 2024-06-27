@@ -1,28 +1,25 @@
-from transformers import SpeechT5Processor, SpeechT5ForTextToSpeech, SpeechT5HifiGan
+from transformers import VitsModel, AutoTokenizer
+import torch
 from datasets import load_dataset
 import torch
 from IPython.display import Audio
 import os
 from dotenv import load_dotenv
 import streamlit as st
+import scipy
 
 load_dotenv()
 api_key = os.getenv("HUGGINGFACE_API_KEY")
 
-processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_tts", api_key=api_key)
-model = SpeechT5ForTextToSpeech.from_pretrained("microsoft/speecht5_tts")
-vocoder = SpeechT5HifiGan.from_pretrained("microsoft/speecht5_hifigan")
-
-embeddings_dataset = load_dataset("pykeio/librivox-tracks", split="train")
-speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0)
+model = VitsModel.from_pretrained("facebook/mms-tts-fra")
+tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-fra")
 
 
-def synthesise(text):
-    inputs = processor(text=text, return_tensors="pt")
-    speech = model.generate_speech(
-        inputs["input_ids"], speaker_embeddings, vocoder=vocoder
-    )
-    return speech.cpu()
+def synthesise(text,model):
+    inputs = tokenizer(text, return_tensors="pt")
+    with torch.no_grad():
+        output = model(**inputs).waveform
+    return output
 
 
 def process_input(user_input):
@@ -37,6 +34,16 @@ user_input = st.text_input("Entrez quelque chose:")
 
 # Bouton pour valider et lancer le processus
 if st.button("Valider"):
-    audio = synthesise(user_input)
-    Audio(audio, rate=16000)
-    st.audio(audio)
+    audio = synthesise(user_input,model)
+    scipy.io.wavfile.write("user.wav", rate=model.config.sampling_rate, data=output)
+    with open("user.wav", "rb") as file:
+        audio_bytes = file.read()
+    # Afficher le lecteur audio
+    st.audio(audio_bytes, format='audio/wav')
+    # Bouton de téléchargement du fichier audio
+    st.download_button(
+        label="Télécharger le fichier audio",
+        data=audio_bytes,
+        file_name=output_filename,
+        mime="audio/wav"
+    )
