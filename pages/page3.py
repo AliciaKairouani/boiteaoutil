@@ -1,46 +1,68 @@
 from transformers import VitsModel, AutoTokenizer
 import torch
-from datasets import load_dataset
 import os
 from dotenv import load_dotenv
 import streamlit as st
 import scipy.io.wavfile
 
+# Load environment variables
 load_dotenv()
 api_key = os.getenv("HUGGINGFACE_API_KEY")
 
-model = VitsModel.from_pretrained("facebook/mms-tts-fra")
-tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-fra")
+# Load model and tokenizer
+try:
+    model = VitsModel.from_pretrained("facebook/mms-tts-fra")
+    tokenizer = AutoTokenizer.from_pretrained("facebook/mms-tts-fra")
+except Exception as e:
+    st.error(f"Error loading model or tokenizer: {e}")
+    st.stop()
 
-
+# Synthesis function
 def synthesise(text, model):
-    inputs = tokenizer(text, return_tensors="pt")
-    with torch.no_grad():
-        output = model(**inputs).waveform
-    return output
+    try:
+        inputs = tokenizer(text, return_tensors="pt")
+        with torch.no_grad():
+            output = model(**inputs).waveform
+        return output
+    except Exception as e:
+        st.error(f"Error during synthesis: {e}")
+        return None
 
-
-# Titre de l'application
+# Streamlit app
 st.title("Du texte à la parole")
 
-# Champ de saisie de texte
-user_input = st.text_input("Entrez quelque chose:", key="text_input")
+# Text input
+user_input = st.text_input("Entrez quelque chose:")
 
-# Bouton pour valider et lancer le processus
-if st.button("Valider", key="validate_button"):
-    audio = synthesise(user_input, model)
-    scipy.io.wavfile.write("user.wav", rate=model.config.sampling_rate, data=audio.numpy())
-    with open("user.wav", "rb") as file:
-        audio_bytes = file.read()
-    
-    # Afficher le lecteur audio
-    st.audio(audio_bytes, format='audio/wav', key="audio_player")
-    
-    # Bouton de téléchargement du fichier audio
-    st.download_button(
-        label="Télécharger le fichier audio",
-        data=audio_bytes,
-        file_name="user.wav",
-        mime="audio/wav",
-        key="download_button"
-    )
+# Validate button
+if st.button("Valider"):
+    if user_input:  # Check if the user input is not empty
+        audio = synthesise(user_input, model)
+        if audio is not None:
+            output_filename = "user.wav"
+            try:
+                scipy.io.wavfile.write(output_filename, rate=model.config.sampling_rate, data=audio.numpy())
+            except Exception as e:
+                st.error(f"Error writing wav file: {e}")
+                st.stop()
+
+            try:
+                with open(output_filename, "rb") as file:
+                    audio_bytes = file.read()
+
+                # Audio playback
+                st.audio(audio_bytes, format='audio/wav')
+
+                # Download button
+                st.download_button(
+                    label="Télécharger le fichier audio",
+                    data=audio_bytes,
+                    file_name=output_filename,
+                    mime="audio/wav"
+                )
+            except Exception as e:
+                st.error(f"Error handling audio file: {e}")
+        else:
+            st.error("Synthesis failed.")
+    else:
+        st.warning("Veuillez entrer du texte avant de valider.")
