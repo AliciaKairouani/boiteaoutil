@@ -13,7 +13,7 @@ processor = SpeechT5Processor.from_pretrained("microsoft/speecht5_tts", api_key=
 model = SpeechT5ForTextToSpeech.from_pretrained("microsoft/speecht5_tts")
 vocoder = SpeechT5HifiGan.from_pretrained("microsoft/speecht5_hifigan")
 
-embeddings_dataset = load_dataset("pykeio/librivox-tracks", split="validation")
+embeddings_dataset = load_dataset("pykeio/librivox-tracks", split="train")
 speaker_embeddings = torch.tensor(embeddings_dataset[7306]["xvector"]).unsqueeze(0)
 
 
