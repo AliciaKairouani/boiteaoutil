@@ -27,7 +27,7 @@ def process_input(user_input):
     return f"Vous avez entré : {user_input}"
 
 # Titre de l'application
-st.title("Traduction Français à Anglais")
+st.title("Du texte à la parol")
 
 # Champ de saisie de texte
 user_input = st.text_input("Entrez quelque chose:")
