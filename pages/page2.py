@@ -18,10 +18,6 @@ processor = WhisperProcessor.from_pretrained("openai/whisper-small", api_key=api
 model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-small")
 model.config.forced_decoder_ids = None
 
-# Load your MP3 file
-
-
-
 # Titre de l'application
 st.title("Transcription Audio/Vidéo")
 
@@ -32,9 +28,10 @@ if uploaded_file is not None:
     # Sauvegarder le fichier téléchargé
     file_path = f"temp/{uploaded_file.name}"
     audio_path = file_path.replace(".mp4", ".wav")
+
     with open(file_path, "wb") as f:
         f.write(uploaded_file.getbuffer())
-    
+
     # Si le fichier est une vidéo, extraire l'audio
     if file_path.endswith(".mp4"):
         # Charger la vidéo
@@ -47,29 +44,32 @@ if uploaded_file is not None:
         video_clip.close()
         audio_clip.close()
 
-    if file_path.endswith(".mp3"):
+    elif file_path.endswith(".mp3"):
         audio = pydub.AudioSegment.from_mp3(file_path)
         audio.export(audio_path, format='wav')
+
     else:
         audio_path = file_path
-    
+
     # Bouton pour lancer la transcription
     if st.button("Transcrire"):
         audio, sample_rate = sf.read(audio_path)
+
         # Resample the audio to 16,000 Hz if necessary
         if sample_rate != 16000:
             audio = librosa.resample(audio, orig_sr=sample_rate, target_sr=16000)
             sample_rate = 16000
+
         # Process the audio file
         input_features = processor(audio, sampling_rate=sample_rate, return_tensors="pt").input_features
         # Generate token ids
         predicted_ids = model.generate(input_features)
         # Decode token ids to text
-        transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True) 
+        transcription = processor.batch_decode(predicted_ids, skip_special_tokens=True)
 
         st.write("Transcription :")
         st.write(transcription)
-    
+
     # Supprimer les fichiers temporaires
     if os.path.exists(file_path):
         os.remove(file_path)
