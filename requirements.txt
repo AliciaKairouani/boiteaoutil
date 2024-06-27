@@ -12,3 +12,4 @@ IPython
 rembg
 Pillow
 sentencepiece
+datasets
