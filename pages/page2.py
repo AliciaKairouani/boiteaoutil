@@ -14,8 +14,8 @@ load_dotenv()
 api_key = os.getenv("HUGGINGFACE_API_KEY")
 
 # Load model and processor
-processor = WhisperProcessor.from_pretrained("openai/whisper-small")
-model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-small")
+processor = WhisperProcessor.from_pretrained("openai/whisper-small", api_key=api_key)
+model = WhisperForConditionalGeneration.from_pretrained("openai/whisper-small", api_key=api_key)
 model.config.forced_decoder_ids = None
 
 # Load your MP3 file
