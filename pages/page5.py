@@ -1,5 +1,6 @@
 from rembg import remove
 from PIL import Image
+import streamlit as st
 
 input_path = 'sample_data/Capture d’écran 2024-06-26 144534.png'
 output_path = 'sample_data/image_sans_arriere_plan.png'
