@@ -35,7 +35,7 @@ user_input = st.text_input("Entrez quelque chose:")
 # Bouton pour valider et lancer le processus
 if st.button("Valider"):
     audio = synthesise(user_input,model)
-    scipy.io.wavfile.write("user.wav", rate=model.config.sampling_rate, data=output)
+    scipy.io.wavfile.write("user.wav", rate=model.config.sampling_rate, data=audio)
     with open("user.wav", "rb") as file:
         audio_bytes = file.read()
     # Afficher le lecteur audio
